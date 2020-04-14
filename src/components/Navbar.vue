@@ -4,6 +4,7 @@
       app
       disable-route-watcher
       v-model="drawer"
+      color="teal"
       dark
       >
         <v-list
@@ -102,16 +103,17 @@ export default {
   },
   mounted () {
     this.role = localStorage.getItem('role')
+    this.role_id = localStorage.getItem('role_id')
     this.email = localStorage.getItem('user')
-    if (this.role == 'XT') {
+    if (this.role_id == 2) {
       this.items.splice(3, 1)
       this.items.splice(2, 1)
     }
-    else if (this.role == 'XD') {
+    else if (this.role_id == 3) {
       this.items.splice(3, 1)
       this.items.splice(1, 1)
     }
-    else if (this.role == 'LT') {
+    else if (this.role_id == 4) {
       this.items.splice(2, 1)
       this.items.splice(1, 1)
     }
