@@ -31,14 +31,14 @@
             <v-btn
               x-small icon fab color="teal"
               @click="approving(passport, true)"
-              v-tooltip="{ content: 'Phê duyệt' }"
+              v-tooltip="{ content: 'Xét duyệt' }"
             >
               <v-icon>mdi-check-outline</v-icon>
             </v-btn>
             <v-btn
               x-small icon fab color="red"
               @click="approving(passport, false)"
-              v-tooltip="{ content: 'Không phê duyệt' }"
+              v-tooltip="{ content: 'Không xét duyệt' }"
             >
               <v-icon>mdi-close-outline</v-icon>
             </v-btn>
@@ -46,100 +46,72 @@
         </v-layout>
         <v-divider></v-divider>
       </v-card>
-
+      <Pagination :page.sync="page" :totalPage="totalPage" />
     </v-container>
-    <div class="text-center ma-2">
-      <v-snackbar
-        v-model="snackbar"
-        top
-        :color="snackbar_color"
-      >
-        {{ snackbar_text }}
-        <v-btn
-          color="black"
-          text
-          @click="snackbar = false"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-snackbar>
-    </div>
+
+    <Snackbar :snackbar="snackbar" :snackbar_props="snackbar_props" />
   </div>
 </template>
 
 <script>
 import PassportServices from '@/services/PassportServices'
+import {AdminMixin} from '@/mixin/AdminMixin'
 
 export default {
+  mixins: [AdminMixin],
+  components: {
+    Snackbar: () => import('@/components/Snackbar'),
+    Pagination: () => import('@/components/Pagination')
+  },
   data () {
     return {
-      passports: {},
-      isApproved: false,
-      snackbar: false,
-      snackbar_text: '',
-      snackbar_color: ''
-    }
-  },
-  filters: {
-    changeText(str) {
-      return str.normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-        .replace(/ /g, '-')
-        .toLowerCase()
-    },
-    changeStatus(status) {
-      if (status.includes('waiting')) return 'Chờ xét duyệt'
-      else if (status.includes('complete')) return 'Đã phê duyệt'
-      else if (status.includes('cancel')) return 'Không phê duyệt'
-      else return ''
+      status: 'xd',
     }
   },
   methods: {
     async approving(passport, isApproved) {
+      let status = ''
       try {
         if (isApproved) {
-          passport.trangthai = 'xd complete'
+          status = 'lt approved'
           this.snackbar_text = 'Xét duyệt thành công'
           this.snackbar_color = '#3cd1c2'
           this.snackbar = true
         }
         else {
-          passport.trangthai = 'xd cancel'
-          this.snackbar_text = 'Không duyệt hồ sơ thành công'
+          status = 'lt canceled'
+          this.snackbar_text = 'Không duyệt thành công'
           this.snackbar_color = '#ffaa2c'
           this.snackbar = true
         }
-        PassportServices.approve(passport.id, {isApproved: isApproved})
+        passport.trangthai = status
+        PassportServices.approve(passport.id, {status, isApproved})
       } 
       catch (error) {
         this.error = error.response.data.error
       }
     },
-  },
-  async mounted () {   
-    this.passports = (await PassportServices.getByStatus('xd')).data
   }
 }
 </script>
 
 <style>
-.passport.complete{
+.passport.completed{
   border-left: 4px solid #3cd1c2;
 }
 .passport.waiting{
   border-left: 4px solid #ffaa2c;
 }
-.passport.cancel{
+.passport.canceled{
   border-left: 4px solid #f83e70;
 }
-div.right > .v-chip.complete{
+div.right > .v-chip.completed{
   background: #3cd1c2;
 }
 div.right > .v-chip.waiting{
   background: #ffaa2c;
 }
-div.right > .v-chip.cancel{
+div.right > .v-chip.canceled{
   background: #f83e70;
 }
 </style>

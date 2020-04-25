@@ -24,15 +24,7 @@
   export default {
     props: {
       passport: {},
-      predicate: cmnd => cmnd > 1
+      dialog: Boolean
     },
-    computed: {
-      itemsWithPower: () => {
-        const result = Object.keys(this.passport)
-          .filter( key => this.passport() )
-          .reduce( (res, key) => (res[key] = this.passport[key], res), {} )
-        return result
-      }
-    }
   }
 </script>

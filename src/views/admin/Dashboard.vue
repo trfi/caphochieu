@@ -2,7 +2,7 @@
   <div class="dashboard">
     <h3 class="subheading grey--text">Dashboard</h3>
 
-    <v-container class="my-5" style="max-width:1000px" v-if="role == 'Adminstrator'">
+    <v-container class="my-5" style="max-width:900px" v-if="role == 'Adminstrator'">
       <v-card flat v-for="passport in passports" :key="passport.title">
         <v-layout row wrap :class="`pa-3 passport ${passport.trangthai}`">
           <v-flex xs6 sm5 md4>
@@ -29,83 +29,55 @@
         </v-layout>
         <v-divider></v-divider>
       </v-card>
+      <Pagination :page.sync="page" :totalPage="totalPage" />
     </v-container>
-    <div class="text-center ma-2">
-      <v-snackbar
-        v-model="snackbar"
-        top
-        :color="snackbar_color"
-      >
-        {{ snackbar_text }}
-        <v-btn
-          color="black"
-          text
-          @click="snackbar = false"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-snackbar>
-    </div>
+
   </div>
 </template>
 
 <script>
 import PassportServices from '@/services/PassportServices'
+import {AdminMixin} from '@/mixin/AdminMixin'
 
 export default {
+  mixins: [AdminMixin],
+  components: {
+    Pagination: () => import('@/components/Pagination')
+  },
   data () {
     return {
-      passports: {},
-      snackbar: false,
-      snackbar_text: '',
-      snackbar_color: '',
-      role: ''
+      role: '',
     }
-  },
-  filters: {
-    changeText(str) {
-      return str.normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-        .replace(/ /g, '-')
-        .toLowerCase()
-    },
-    changeStatus(status) {
-      if (status == 'xt waiting') return 'Chờ xác thực'
-      else if (status == 'xd waiting') return 'Chờ xét duyệt'
-      else if (status == 'xt complete') return 'Đã xác thực'
-      else if (status == 'xt cancel') return 'Không hợp lệ'
-      else if (status == 'lt approve') return 'Đã phê duyệt'
-      else if (status == 'lt cancel') return 'Không phê duyệt'
-      else return ''
-    }
-  },
-  methods: {
   },
   async mounted () {
     this.role = localStorage.getItem('role')
-    this.passports = (await PassportServices.getAll()).data
   }
 }
 </script>
 
 <style>
-.passport.complete, .passport.approve {
+.passport.completed, .passport.approved {
   border-left: 4px solid #3cd1c2;
 }
 .passport.waiting {
   border-left: 4px solid #ffaa2c;
 }
-.passport.cancel {
+.passport.canceled {
   border-left: 4px solid #f83e70;
 }
-div.right > .v-chip.complete, div.right > .v-chip.approve {
+.passport.archived{
+  border-left: 4px solid #ffc70d;
+}
+div.right > .v-chip.completed, div.right > .v-chip.approved {
   background: #3cd1c2;
 }
 div.right > .v-chip.waiting{
   background: #ffaa2c;
 }
-div.right > .v-chip.cancel{
+div.right > .v-chip.canceled{
   background: #f83e70;
+}
+div.right > .v-chip.archived{
+  background: #ffc70d;
 }
 </style>
